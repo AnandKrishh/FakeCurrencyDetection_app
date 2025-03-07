@@ -1,4 +1,5 @@
 import streamlit as st
+import gdown
 from keras.applications.resnet50 import ResNet50, preprocess_input
 from keras.preprocessing import image
 from tensorflow.keras.layers import Flatten
@@ -49,8 +50,9 @@ def build_finetune_model(base_model, dropout, fc_layers, num_classes):
     return finetune_model
 
 # Load custom model weights
+gdown.download('https://drive.google.com/file/d/148EQPuXvCcZ6qWi-W59HLZ282oNhJAgg/view?usp=drive_link', 'Final_model.h5', quiet=False)
 model = build_finetune_model(base_model, dropout=0.5, fc_layers=[1024, 1024], num_classes=2)
-model.load_weights("C:\\Users\\avant\\OneDrive\\Desktop\\FakeCurrencyDetectionSystem-master\\FakeCurrencyDetectionSystem-master\\Final_model.h5")
+model.load_weights("Final_model.h5")
 
 # Class labels
 class_list = ['Fake','Real']
