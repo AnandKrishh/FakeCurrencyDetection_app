@@ -2,39 +2,17 @@ import streamlit as st
 import gdown
 from keras.applications.resnet50 import ResNet50, preprocess_input
 from keras.preprocessing import image
-from tensorflow.keras.layers import Flatten
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Flatten, Dense, Dropout
 from tensorflow.keras.models import Model
 import numpy as np
 from PIL import Image
 
-# # Function to set a background image
-# def set_bg_image(image_path):
-#     st.markdown(
-#         f"""
-#         <style>
-#         .stApp {{
-#             background-image: url({image_path});
-#             background-size: cover;
-#             background-position: center center;
-#         }}
-#         </style>
-#         """,
-#         unsafe_allow_html=True
-#     )
+# Set page config
+st.set_page_config(page_title="Fake or Real Image Classifier", page_icon="\U0001F911", layout="wide", initial_sidebar_state="expanded")
 
-# # Set a custom background image for the Streamlit app
-# set_bg_image('https://images.pexels.com/photos/6901511/pexels-photo-6901511.jpeg?auto=compress&cs=tinysrgb&w=600')  # Replace with the actual path to your background image
-
-
-# Load the pre-trained ResNet50 model
-height = 300
-width = 300
-base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(height, width, 3))
-
-# Your custom model architecture
+# Function to build the fine-tuned model
 def build_finetune_model(base_model, dropout, fc_layers, num_classes):
+    # Freeze base model layers
     for layer in base_model.layers:
         layer.trainable = False
 
@@ -49,13 +27,26 @@ def build_finetune_model(base_model, dropout, fc_layers, num_classes):
     finetune_model = Model(inputs=base_model.input, outputs=predictions) 
     return finetune_model
 
-# Load custom model weights
+# Download the model weights from Google Drive
 gdown.download('https://drive.google.com/uc?id=1E_He2U8MN0vjiVUMa41Nr7Au0IknvXZH&export=download', 'Final_model.h5', quiet=False)
+
+# Load the pre-trained ResNet50 model (ensure consistent input size)
+height = 300
+width = 300
+base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(height, width, 3))
+
+# Rebuild the fine-tune model
 model = build_finetune_model(base_model, dropout=0.5, fc_layers=[1024, 1024], num_classes=2)
-model.load_weights("Final_model.h5")
+
+# Try to load weights (use by_name=True if there's a mismatch in layers)
+try:
+    model.load_weights("Final_model.h5", by_name=True)
+    st.write("Model weights loaded successfully.")
+except Exception as e:
+    st.write(f"Error loading model weights: {e}")
 
 # Class labels
-class_list = ['Fake','Real']
+class_list = ['Fake', 'Real']
 
 # Prediction function
 def predict_image(img):
@@ -70,9 +61,6 @@ def predict_image(img):
     return predicted_class
 
 # Streamlit app layout
-
-st.set_page_config(page_title="Fake or Real Image Classifier", page_icon="\U0001F911", layout="wide", initial_sidebar_state="expanded")
-
 st.markdown("""
     <style>
         .title {
@@ -87,7 +75,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.write("Upload an image of either a real or a fake object, and the model will classify it.")
-
 
 # File uploader
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
