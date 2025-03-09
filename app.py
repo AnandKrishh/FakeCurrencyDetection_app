@@ -10,6 +10,10 @@ from PIL import Image
 # Set page config
 st.set_page_config(page_title="Fake or Real Image Classifier", page_icon="\U0001F911", layout="wide", initial_sidebar_state="expanded")
 
+# Set model input size
+height = 300
+width = 300
+
 # Function to build the fine-tuned model
 def build_finetune_model(base_model, dropout, fc_layers, num_classes):
     # Freeze base model layers
@@ -31,8 +35,6 @@ def build_finetune_model(base_model, dropout, fc_layers, num_classes):
 @st.cache_resource
 def load_model():
     # Load the pre-trained ResNet50 model (ensure consistent input size)
-    height = 300
-    width = 300
     base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(height, width, 3))
 
     # Download the model weights from Google Drive (ensure download only once)
@@ -56,7 +58,7 @@ model = load_model()
 class_list = ['Fake', 'Real']
 
 # Prediction function
-def predict_image(img):
+def predict_image(img, height, width):
     # Ensure the uploaded image is a PIL image
     if isinstance(img, Image.Image):
         img = img.resize((height, width))  # Resize to fit model input size
@@ -107,7 +109,7 @@ if uploaded_file is not None:
     if submit_button:
         # Make prediction
         with st.spinner("Classifying..."):
-            result = predict_image(img)
+            result = predict_image(img, height, width)  # Pass height and width as arguments
         
         # Display result
         st.write(f"Prediction: **{result}**")
