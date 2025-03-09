@@ -1,7 +1,6 @@
 import streamlit as st
 import gdown
 from keras.applications.resnet50 import ResNet50, preprocess_input
-from keras.preprocessing import image
 from tensorflow.keras.layers import Flatten, Dense, Dropout
 from tensorflow.keras.models import Model
 import numpy as np
@@ -54,8 +53,8 @@ def load_model():
 # Load the model once at the start
 model = load_model()
 
-# Class labels
-class_list = ['Fake', 'Real']
+# Ensure class labels match the trained model labels (This could be the source of your issue)
+class_list = ['Real', 'Fake']
 
 # Prediction function
 def predict_image(img, height, width):
@@ -68,11 +67,11 @@ def predict_image(img, height, width):
     # Convert the image to a numpy array and preprocess it
     img_array = np.array(img)
     img_array = np.expand_dims(img_array, axis=0)
-    img_array = preprocess_input(img_array)
+    img_array = preprocess_input(img_array)  # Ensure preprocessing is done the same as during training
 
     # Model prediction
     prediction = model.predict(img_array)
-    predicted_class = class_list[np.argmax(prediction)]
+    predicted_class = class_list[np.argmax(prediction)]  # Make sure this matches your trained classes
     return predicted_class
 
 
