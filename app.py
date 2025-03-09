@@ -54,7 +54,7 @@ def load_model():
 model = load_model()
 
 # Ensure class labels match the trained model labels (This could be the source of your issue)
-class_list = ['Real', 'Fake']
+class_list = ['Real', 'Fake']  # Check if this matches the model's training labels.
 
 # Prediction function
 def predict_image(img, height, width):
@@ -69,9 +69,13 @@ def predict_image(img, height, width):
     img_array = np.expand_dims(img_array, axis=0)
     img_array = preprocess_input(img_array)  # Ensure preprocessing is done the same as during training
 
+    # Debugging: check the input image dimensions and type
+    print(f"Image shape after preprocessing: {img_array.shape}")
+    
     # Model prediction
     prediction = model.predict(img_array)
     predicted_class = class_list[np.argmax(prediction)]  # Make sure this matches your trained classes
+    print(f"Prediction: {predicted_class}")  # Debugging: print the prediction
     return predicted_class
 
 
