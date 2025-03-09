@@ -90,7 +90,7 @@ st.markdown("""
             text-align: center; 
         }
     </style>
-    <h1 class="title">Fake or Real Image Classifier</h1>
+    <h1 class="title">Fake Currency Detection System</h1>
 """, unsafe_allow_html=True)
 
 st.write("Upload an image of either a real or a fake object, and the model will classify it.")
