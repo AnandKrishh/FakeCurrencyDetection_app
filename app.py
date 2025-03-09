@@ -36,7 +36,7 @@ def load_model():
     base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(height, width, 3))
 
     # Download the model weights from Google Drive (ensure download only once)
-    gdown.download('https://drive.google.com/uc?id=1E_He2U8MN0vjiVUMa41Nr7Au0IknvXZH&export=download', 'Final_model.h5', quiet=False)
+    gdown.download('https://drive.google.com/uc?id=1xeyNYt6KBw6yG4PvxAMqdHLe-cRYd656&export=download', 'Final_model.h5', quiet=False)
 
     # Rebuild the fine-tune model
     model = build_finetune_model(base_model, dropout=0.5, fc_layers=[1024, 1024], num_classes=2)
@@ -92,7 +92,7 @@ result = None
 if uploaded_file is not None:
     # Display image
     img = Image.open(uploaded_file)
-    st.image(img, caption="Uploaded Image", use_column_width=True)
+    st.image(img, caption="Uploaded Image", use_container_width=True)
 
     # Add a Submit button to trigger the analysis
     submit_button = st.button("Submit for Prediction")
