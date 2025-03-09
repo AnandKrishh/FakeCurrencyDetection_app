@@ -27,30 +27,37 @@ def build_finetune_model(base_model, dropout, fc_layers, num_classes):
     finetune_model = Model(inputs=base_model.input, outputs=predictions) 
     return finetune_model
 
-# Download the model weights from Google Drive
-gdown.download('https://drive.google.com/uc?id=1E_He2U8MN0vjiVUMa41Nr7Au0IknvXZH&export=download', 'Final_model.h5', quiet=False)
+# Use caching for loading the model to avoid repeated loading
+@st.cache_resource
+def load_model():
+    # Load the pre-trained ResNet50 model (ensure consistent input size)
+    height = 300
+    width = 300
+    base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(height, width, 3))
 
-# Load the pre-trained ResNet50 model (ensure consistent input size)
-height = 300
-width = 300
-base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(height, width, 3))
+    # Download the model weights from Google Drive (ensure download only once)
+    gdown.download('https://drive.google.com/uc?id=1E_He2U8MN0vjiVUMa41Nr7Au0IknvXZH&export=download', 'Final_model.h5', quiet=False)
 
-# Rebuild the fine-tune model
-model = build_finetune_model(base_model, dropout=0.5, fc_layers=[1024, 1024], num_classes=2)
+    # Rebuild the fine-tune model
+    model = build_finetune_model(base_model, dropout=0.5, fc_layers=[1024, 1024], num_classes=2)
 
-# Try to load weights (use by_name=True if there's a mismatch in layers)
-try:
-    model.load_weights("Final_model.h5", by_name=True)
-    st.write("Model weights loaded successfully.")
-except Exception as e:
-    st.write(f"Error loading model weights: {e}")
+    # Try to load weights (use by_name=True if there's a mismatch in layers)
+    try:
+        model.load_weights("Final_model.h5", by_name=True)
+        st.write("Model weights loaded successfully.")
+    except Exception as e:
+        st.write(f"Error loading model weights: {e}")
+    return model
+
+# Load the model once at the start
+model = load_model()
 
 # Class labels
 class_list = ['Fake', 'Real']
 
 # Prediction function
 def predict_image(img):
-    img = img.resize((height, width))
+    img = img.resize((height, width))  # Resize to fit model input size
     img_array = np.array(img)
     img_array = np.expand_dims(img_array, axis=0)
     img_array = preprocess_input(img_array)
