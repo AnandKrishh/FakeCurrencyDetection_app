@@ -7,12 +7,15 @@ from tensorflow.keras.models import Model
 import numpy as np
 from PIL import Image
 
-# Set page config
-st.set_page_config(page_title="Fake or Real Image Classifier", page_icon="\U0001F911", layout="wide", initial_sidebar_state="expanded")
+# Set model input size
+height = 300
+width = 300
 
-# Function to build the fine-tuned model
+# Load the pre-trained ResNet50 model
+base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(height, width, 3))
+
+# Custom model architecture
 def build_finetune_model(base_model, dropout, fc_layers, num_classes):
-    # Freeze base model layers
     for layer in base_model.layers:
         layer.trainable = False
 
@@ -27,36 +30,16 @@ def build_finetune_model(base_model, dropout, fc_layers, num_classes):
     finetune_model = Model(inputs=base_model.input, outputs=predictions) 
     return finetune_model
 
-# Use caching for loading the model to avoid repeated loading
-@st.cache_resource
-def load_model():
-    # Load the pre-trained ResNet50 model (ensure consistent input size)
-    height = 300
-    width = 300
-    base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(height, width, 3))
-
-    # Download the model weights from Google Drive (ensure download only once)
-    gdown.download(' https://drive.google.com/uc?id=1xeyNYt6KBw6yG4PvxAMqdHLe-cRYd656&export=download', 'Final_model.h5', quiet=False)
-
-    # Rebuild the fine-tune model
-    model = build_finetune_model(base_model, dropout=0.5, fc_layers=[1024, 1024], num_classes=2)
-
-    # Try to load weights (use by_name=True if there's a mismatch in layers)
-    try:
-        model.load_weights("Final_model.h5", by_name=True)
-        st.write("Model weights loaded successfully.")
-    except Exception as e:
-        st.write(f"Error loading model weights: {e}")
-    return model
-
-# Load the model once at the start
-model = load_model()
+# Load custom model weights
+gdown.download('https://drive.google.com/uc?id=1E_He2U8MN0vjiVUMa41Nr7Au0IknvXZH&export=download', 'Final_model.h5', quiet=False)
+model = build_finetune_model(base_model, dropout=0.5, fc_layers=[1024, 1024], num_classes=2)
+model.load_weights("Final_model.h5")
 
 # Class labels
 class_list = ['Fake', 'Real']
 
 # Prediction function
-def predict_image(img):
+def predict_image(img, height, width):
     # Ensure the uploaded image is a PIL image
     if isinstance(img, Image.Image):
         img = img.resize((height, width))  # Resize to fit model input size
@@ -73,8 +56,9 @@ def predict_image(img):
     predicted_class = class_list[np.argmax(prediction)]
     return predicted_class
 
-
 # Streamlit app layout
+st.set_page_config(page_title="Fake or Real Image Classifier", page_icon="\U0001F911", layout="wide", initial_sidebar_state="expanded")
+
 st.markdown("""
     <style>
         .title {
@@ -107,7 +91,7 @@ if uploaded_file is not None:
     if submit_button:
         # Make prediction
         with st.spinner("Classifying..."):
-            result = predict_image(img)
+            result = predict_image(img, height, width)
         
         # Display result
         st.write(f"Prediction: **{result}**")
