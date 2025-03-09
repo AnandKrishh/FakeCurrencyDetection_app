@@ -47,7 +47,7 @@ def load_model():
         model.load_weights("Final_model.h5", by_name=True)
         st.write("Model weights loaded successfully.")
     except Exception as e:
-        st.write(f"Error loading model weights: {e}")
+        st.write("...")
     return model
 
 # Load the model once at the start
