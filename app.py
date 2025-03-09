@@ -57,15 +57,22 @@ class_list = ['Fake', 'Real']
 
 # Prediction function
 def predict_image(img):
-    img = img.resize((height, width))  # Resize to fit model input size
+    # Ensure the uploaded image is a PIL image
+    if isinstance(img, Image.Image):
+        img = img.resize((height, width))  # Resize to fit model input size
+    else:
+        raise ValueError("Input image is not a valid PIL image")
+
+    # Convert the image to a numpy array and preprocess it
     img_array = np.array(img)
     img_array = np.expand_dims(img_array, axis=0)
     img_array = preprocess_input(img_array)
-    
+
     # Model prediction
     prediction = model.predict(img_array)
     predicted_class = class_list[np.argmax(prediction)]
     return predicted_class
+
 
 # Streamlit app layout
 st.markdown("""
