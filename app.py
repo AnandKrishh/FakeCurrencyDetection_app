@@ -50,7 +50,7 @@ def build_finetune_model(base_model, dropout, fc_layers, num_classes):
     return finetune_model
 
 # Load custom model weights
-gdown.download('https://drive.google.com/uc?id=148EQPuXvCcZ6qWi-W59HLZ282oNhJAgg&export=download', 'Final_model.h5', quiet=False)
+gdown.download('https://drive.google.com/uc?id=1E_He2U8MN0vjiVUMa41Nr7Au0IknvXZH&export=download', 'Final_model.h5', quiet=False)
 model = build_finetune_model(base_model, dropout=0.5, fc_layers=[1024, 1024], num_classes=2)
 model.load_weights("Final_model.h5")
 
